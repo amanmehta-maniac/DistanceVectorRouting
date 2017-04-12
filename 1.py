@@ -9,69 +9,62 @@ from datetime import datetime
 from collections import *
 
 
+
+
 class Server(Thread):
     def __init__(self):
         Thread.__init__(self)
     def run(self):
         
         # relax(0)
-        graph, i = defaultdict(dict), 0
-        with open('test') as f:
-            lines = f.readlines()
-            for i in range(1+int(lines[0])):
-                gf = lines[i].split()
-                if i != 0:
-                    k=1
-                    for l in range(int(gf[0])):
-                        graph[i][int(gf[k])] = int(gf[k+1])
-                        k=k+2
-
         # print len(graph)
         # for i in graph:
         # d, p = bellman_ford(graph, i)
-        d = defaultdict(dict) # Stands for destination
         # p = {} # Stands for predecessor
-        for i in graph:
-            print i,':',
-            for j in graph[i]:
-                print j,
-            print
-        for node in graph:
-            for Node in graph:
-                if node != Node:
-                    d[node][Node] = float('Inf') # We start admiting that the rest of nodes are very very far
-                else: d[node][Node] = 0
-        # d = initialize(graph, source)
+        # for i in graph:
+        #     print i,':',
+        #     for j in graph[i]:
+        #         print j,
+        #     print
+        # # d = initialize(graph, source)
         port = 60000
         s = socket.socket()
         host = ""
         s.bind((host, port))
         s.listen(5)
         for i in range(len(graph)-1): #Run this until is converges
-            print "************************************i is", i
-            print 'Server listening....'
+            # print "************************************i is", i
+            # print 'Server listening....'
             for u in graph:
-                print "u is " ,u
-                conn, addr = s.accept()
-                print "U IS AGAIN,", u
-                time.sleep(0.1)
-                print "lol"
+                # print "u is " ,u
+                # conn, addr = s.accept()
+                # print "U IS AGAIN,", u
+                #time.sleep(0.1)
+                # print "lol"
                 tosend=""
                 for v in graph: #For each neighbour of u
                     tosend = tosend + str(v) + ' ' + str(d[u][v]) + "\n"
                     # relax(u, v, graph, d, p) #Lets relax it
-                forwd_table_u = str(u) + ' ' + tosend
-                print "table sent"
-                conn.send(forwd_table_u)
-                # time.sleep(0.1)
-                print "data sent, now connection is closed"
+                forwd_table_u = tosend
+                for v in graph[u]:
+                    conn, addr = s.accept()
+                    conn.send(forwd_table_u)
+                    #time.sleep(0.1)
+                    conn, addr = s.accept()
+                    conn.send(str(v))
+                    #time.sleep(0.1)
+                    conn, addr = s.accept()
+                    conn.send(str(u))
+                # print "table sent"
+                # #time.sleep(0.1)
+                # print "data sent, now connection is closed"
                 # conn.close()
-        print "out of lloop//////////////////////////////"
-        time.sleep(0.1)
+        # print "out of lloop//////////////////////////////"
+        #time.sleep(0.1)
         conn, addr = s.accept()
         conn.send("Bye")
-        print "after BYE sent////////////////////////////"
-        # time.sleep(1)
+        # print "after BYE sent////////////////////////////"
+        # #time.sleep(1)
         conn.close()
         # for u in graph:
         #     for v in graph[u]:
@@ -93,28 +86,63 @@ class Receiver(Thread):
         Thread.__init__(self)
     def run(self):
 
+        graph, i = defaultdict(dict), 0
+        with open('test') as f:
+            lines = f.readlines()
+            for i in range(1+int(lines[0])):
+                gf = lines[i].split()
+                if i != 0:
+                    k=1
+                    for l in range(int(gf[0])):
+                        if int(gf[k]) not in graph[i]:
+                            graph[i][int(gf[k])] = int(gf[k+1])
+                        else:
+                            graph[i][int(gf[k])] = min(graph[i][int(gf[k])], int(gf[k+1]))
+                        k=k+2
+
+        distance = defaultdict()
+
         # def relax(flag):
         # forwarding table
         # node + forwarding table of neighbour
         # d[neighbour] is the value of distance and this is called for all neighbours
         # recv(1024)
-        
+        ii=0
         while True:
+            ii+=1
             s = socket.socket()
             host = ""
             port = 60000
             s.connect((host, port))
             # s.send("Hello server!")
-            print "relax called"
-            print "waiting to rec"
-            # time.sleep(0.1)
+            # print "relax called"
+            # print "waiting to rec"
+            # #time.sleep(0.1)
             data = s.recv(1024)
-            # time.sleep(0.1)
-            print "data is", data
+            if ii%3 == 1:
+                dist = data
+            elif ii%3 == 2: 
+                node = int(data)
+            else:
+                sender = int(data)
+                # print "Ok", sender, node,
+                # print graph
+                dist = dist.split('\n')
+                for i in range(len(dist) - 1): 
+                    dist[i] = dist[i].split()
+                    if dist[i][1] == 'inf': dist[i][1] = 10**123
+                    dist[i][0], dist[i][1] = int(dist[i][0]), int(dist[i][1])
+                    distance[dist[i][0]] = dist[i][1]
+                for j in graph:
+                    # print d[node][j], distance[j] 
+                    if d[node][j] > distance[j] + graph[sender][node]:
+                        d[node][j] = distance[j] + graph[sender][node]
+            # #time.sleep(0.1)
+            # print "data is", data
             if data == 'Bye': break
             
         s.close()
-        print 'koud'
+        # print 'koud'
         # if d[neighbour] > d[node] + graph[node][neighbour]:
         #     # update
         #     d[neighbour] = d[node] + graph[node][neighbour]
@@ -123,6 +151,28 @@ class Receiver(Thread):
 
 
 if __name__ == '__main__': 
+
+    graph, i = defaultdict(dict), 0
+    with open('test') as f:
+        lines = f.readlines()
+        for i in range(1+int(lines[0])):
+            gf = lines[i].split()
+            if i != 0:
+                k=1
+                for l in range(int(gf[0])):
+                    if int(gf[k]) not in graph[i]:
+                        graph[i][int(gf[k])] = int(gf[k+1])
+                    else:
+                        graph[i][int(gf[k])] = min(graph[i][int(gf[k])], int(gf[k+1]))
+                    k=k+2
+
+    d = defaultdict(dict) # Stands for destination
+    for node in graph:
+        for Node in graph:
+            if node != Node:
+                d[node][Node] = float('Inf') # We start admiting that the rest of nodes are very very far
+            else: d[node][Node] = 0
+        
 
     # print graph
     rec=Receiver()
@@ -135,9 +185,17 @@ if __name__ == '__main__':
 
     # Start running the threads!
     ser.start()
-    time.sleep(3)
+    time.sleep(0.3)
     rec.start()
 
     # Wait for the threads to finish...
     ser.join()
     rec.join()
+    print "graph",graph
+    print len(graph)
+    for i in graph:
+        print len(graph) - 1,
+        for j in graph:
+            if i!=j:
+                print j,d[i][j],
+        print 
