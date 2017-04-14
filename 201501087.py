@@ -1,4 +1,4 @@
-### To run this, you must make a file and replace test with its <filename> name.
+### To run this, you must make a file and replace "test" with its <filename> name.
 
 
 
@@ -33,6 +33,8 @@ class Server(Thread):
         host = ""
         s.bind((host, port))
         s.listen(5)
+        conn, addr = s.accept()
+        # print 'Got connection from', addr
         for i in range(1,N): #Run this until is converges
             # print "************************************i is", i
             # print 'Server listening....'
@@ -51,29 +53,33 @@ class Server(Thread):
                 # hashed = hashed.update(forwd_table_u)
                 for v in graph[u]:
                     
-                    conn, addr = s.accept()
                     conn.send(forwd_table_u)
+                    # conn.close()
                     
-                    
-                    #time.sleep(0.1)
-                    conn, addr = s.accept()
+                    time.sleep(0.01)
+                    # conn, addr = s.accept()
                     conn.send(str(v))
+                    # conn.close()
 
-                    #time.sleep(0.1)
-                    conn, addr = s.accept()
+                    time.sleep(0.01)
+                    # conn, addr = s.accept()
                     conn.send(str(u))
+                    # conn.close()
 
-                    #time.sleep(0.1)
-                    conn, addr = s.accept()
+                    time.sleep(0.01)
+                    # conn, addr = s.accept()
                     conn.send(hashed)
+
+                    time.sleep(0.01)
+                    # conn.close()
 
                 # print "table sent"
                 # #time.sleep(0.1)
                 # print "data sent, now connection is closed"
                 # conn.close()
         # print "out of lloop//////////////////////////////"
-        #time.sleep(0.1)
-        conn, addr = s.accept()
+        time.sleep(0.01)
+        # conn, addr = s.accept()
         conn.send("Bye")
         # print "after BYE sent////////////////////////////"
         # #time.sleep(1)
@@ -121,12 +127,13 @@ class Receiver(Thread):
         # d[neighbour] is the value of distance and this is called for all neighbours
         # recv(1024)
         ii=0
+        s = socket.socket()
+        host = ""
+        port = 60000
+        s.connect((host, port))
+        s.send('Hello server!')
         while True:
             ii+=1
-            s = socket.socket()
-            host = ""
-            port = 60000
-            s.connect((host, port))
             # s.send("Hello server!")
             # print "relax called"
             # print "waiting to rec"
@@ -173,7 +180,7 @@ if __name__ == '__main__':
 
     graph, i = defaultdict(dict), 0
     N = 0
-    with open('test') as f:
+    with open('test2') as f:
         lines = f.readlines()
         N = int(lines[0])
         for i in range(1+int(lines[0])):
