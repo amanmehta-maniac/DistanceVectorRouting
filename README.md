@@ -4,7 +4,7 @@ algorithm and finally output the shortest cost from each node to every other nod
 For eg: 
 Input file: 
 5
-2 2 2 4 5
+2 2 2 4 5 '\n'
 4 1 2 3 14 4 5 5 4
 2 2 14 5 34
 3 1 5 2 5 5 58
