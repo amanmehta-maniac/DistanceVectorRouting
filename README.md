@@ -9,7 +9,7 @@ Input file:
 2 2 14 5 34
 3 1 5 2 5 5 58
 3 2 4 3 34 4 58
-(refer to image 'cn.jpg' for the given graph)
+(refer to image 'cn.png' for the given graph)
 
 Output:
 5
